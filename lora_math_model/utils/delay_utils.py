@@ -1,34 +1,3 @@
-DELAY_COEF_500 = {
-  12: (684, 15.67),
-  11: (338, 8.45),
-  10: (183, 4.64),
-  9:  (100, 2.54),
-  8:  (59,  1.43),
-  7:  (30,  0.83),
-  6:  (60,  0.59),
-}
-
-def lora_delay_ms(
-  sf: int,
-  bw_hz: float,
-  payload_bytes: int,
-  cr: int = 8,
-):
-  base_delay, per_byte = DELAY_COEF_500[sf]
-
-  if bw_hz == 250_000:
-    bw_scale = 2.2
-  elif bw_hz == 125_000:
-    bw_scale = 4.4
-  else:
-    bw_scale = 1.0
-
-  cr_scale = cr / 8.0
-
-  delay = (base_delay + per_byte * payload_bytes) * bw_scale * cr_scale
-
-  return round(delay, 2)
-
 TOA_COEF_500_CR8 = {
   12: (181.50493096646943, 13.249506903353057),
   11: (84.61341222879685,  7.238658777120316),
@@ -39,7 +8,7 @@ TOA_COEF_500_CR8 = {
   6:  (2.8579881656804735, 0.41420118343195267),
 }
 
-def lora_time_on_air_ms(
+def calculate_toa(
   sf: int,
   bw_hz: float,
   payload_bytes: int,
@@ -63,11 +32,3 @@ def lora_time_on_air_ms(
   toa += (preamble_sym - 10) * tsym_ms
 
   return toa
-
-def rtoa_ms(toa_ms: float, sf: int, bw_hz: float) -> float:
-  ts_ms = (2 ** sf) / (bw_hz) * 1000.0
-
-  if sf >= 7:
-    return toa_ms + 8.0 * ts_ms
-  else:
-    return toa_ms + 31.8

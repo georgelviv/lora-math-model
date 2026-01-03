@@ -1,6 +1,9 @@
 from .models import Config, State, EnvironmentModel
 import logging
-from .utils import lora_log
+from .utils import (
+  lora_log, calculate_toa, bytes_per_second, chunks_count,
+  compute_rssi
+)
 from .logger import default_logger
 from .environment import LORA_SIMULATION_ENVIRONMENTS
 
@@ -29,14 +32,33 @@ class LoraMathModel():
     return self.config
   
   async def ping(self, id: int) -> State:
+    freq = self.config.get('FQ') * 10e6
+    sf = self.config.get('SF')
+    bw = self.config.get('BW') * 1000
+    cr = self.config.get('CR')
+    pl = self.config.get('PL')
+    ih = self.config.get('IH')
+    tx_power_dbm = self.config.get('TP')
+
+    payload_size = 10
+
+    rssi = compute_rssi(
+      distance_m=self.env_model.distance_m,
+      freq_hz=freq,
+      path_loss_exponent=self.env_model.path_loss_exponent,
+      shadow_sigma_db=self.env_model.shadow_sigma_db,
+      tx_power_dbm=tx_power_dbm
+    )
+    toa = calculate_toa(sf, bw, payload_size, cr, pl)
+
     state: State = {
-      'BPS': 1,
-      'CHC': 1,
+      'BPS': bytes_per_second(payload_size, toa),
+      'CHC': chunks_count(payload_size, ih, pl),
       'DELAY': 1,
-      'RSSI': 1,
+      'RSSI': rssi,
       'SNR': 1,
-      'RTOA': 1,
-      'TOA': 1,
+      'RTOA': toa,
+      'TOA': toa,
       'ETX': 1,
       'ATT': 1
     }

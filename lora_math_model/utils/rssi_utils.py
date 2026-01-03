@@ -35,10 +35,10 @@ def pl_d0_friis(freq_hz: float, d0: float = 1.0) -> float:
 def compute_rssi(
   distance_m: float,
   freq_hz: float,
-  d0: float,
   path_loss_exponent: float,
   tx_power_dbm: float,
   shadow_sigma_db: float,
+  d0: float = 1.0,
 ) -> float:
     
   pl_d0 = pl_d0_friis(freq_hz, d0)
