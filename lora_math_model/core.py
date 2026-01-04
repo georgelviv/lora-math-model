@@ -2,7 +2,7 @@ from .models import Config, State, EnvironmentModel
 import logging
 from .utils import (
   lora_log, calculate_toa, bytes_per_second, chunks_count,
-  compute_rssi
+  compute_rssi, compute_snr
 )
 from .logger import default_logger
 from .environment import LORA_SIMULATION_ENVIRONMENTS
@@ -49,6 +49,10 @@ class LoraMathModel():
       shadow_sigma_db=self.env_model.shadow_sigma_db,
       tx_power_dbm=tx_power_dbm
     )
+    snr = compute_snr(
+      rssi_dbm=rssi,
+      bandwidth_hz=bw
+    )
     toa = calculate_toa(sf, bw, payload_size, cr, pl)
 
     state: State = {
@@ -56,7 +60,7 @@ class LoraMathModel():
       'CHC': chunks_count(payload_size, ih, pl),
       'DELAY': 1,
       'RSSI': rssi,
-      'SNR': 1,
+      'SNR': snr,
       'RTOA': toa,
       'TOA': toa,
       'ETX': 1,
