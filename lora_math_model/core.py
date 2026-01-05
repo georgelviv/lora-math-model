@@ -2,7 +2,7 @@ from .models import Config, State, EnvironmentModel
 import logging
 from .utils import (
   lora_log, calculate_toa, bytes_per_second, chunks_count,
-  compute_rssi, compute_snr
+  compute_rssi, compute_snr, calculate_delay
 )
 from .logger import default_logger
 from .environment import LORA_SIMULATION_ENVIRONMENTS
@@ -54,11 +54,12 @@ class LoraMathModel():
       bandwidth_hz=bw
     )
     toa = calculate_toa(sf, bw, payload_size, cr, pl)
+    delay = calculate_delay(toa)
 
     state: State = {
       'BPS': bytes_per_second(payload_size, toa),
       'CHC': chunks_count(payload_size, ih, pl),
-      'DELAY': 1,
+      'DELAY': delay,
       'RSSI': rssi,
       'SNR': snr,
       'RTOA': toa,

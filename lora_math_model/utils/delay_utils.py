@@ -32,3 +32,6 @@ def calculate_toa(
   toa += (preamble_sym - 10) * tsym_ms
 
   return toa
+
+def calculate_delay(toa: int, software_delay = 110):
+  return toa * 2 + software_delay
